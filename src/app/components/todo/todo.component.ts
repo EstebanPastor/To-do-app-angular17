@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, computed } from '@angular/core';
 import { FilterType, TodoModel } from '../../models/todo';
 import { FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -17,6 +17,21 @@ export class TodoComponent {
     { id: 3, title: 'Buy chocolates', completed: false, editing: false },
   ]);
   filter = signal<FilterType>('all');
+
+  todoListFiltered = computed(() => {
+    
+    const filter = this.filter();
+    const todos = this.todolist();
+
+    switch (filter) {
+      case 'active':
+        return todos.filter((todo) => !todo.completed);
+      case 'completed':
+        return todos.filter((todo) => todo.completed);
+      default:
+        return todos;
+    }
+  });
 
   newTodo = new FormControl('', {
     nonNullable: true,
@@ -60,6 +75,29 @@ export class TodoComponent {
   removeTodo(todoId: number) {
     this.todolist.update((prevTodos) => {
       return prevTodos.filter((todo) => todo.id !== todoId);
-    })
+    });
+  }
+  updateTodoEditingMode(todoId: number) {
+    return this.todolist.update((prevTodos) => {
+      return prevTodos.map((todo) => {
+        return todo.id === todoId
+          ? {
+              ...todo,
+              editing: true,
+            }
+          : { ...todo, editing: false };
+      });
+    });
+  }
+  saveTitleTodo(todoId: number, event: Event) {
+    const title = (event.target as HTMLInputElement).value;
+
+    return this.todolist.update((prevTodos) =>
+      prevTodos.map((todo) => {
+        return todo.id === todoId
+          ? { ...todo, title: title, editing: false }
+          : todo;
+      })
+    );
   }
 }

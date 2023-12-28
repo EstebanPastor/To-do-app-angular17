@@ -29,16 +29,23 @@
       Completed
     </button>
   </div>
+
   <ul class="todolist">
-    @for (todo of todolist(); track todo.id) { @if (todo.editing) {
+    @for (todo of todoListFiltered(); track todo.id) { @if (todo.editing) {
     <li class="todo-editing">
-      <input type="text" placeholder="Edit task" />
+      <input type="text" placeholder="Edit task" [value]="todo.title" (keydown.enter)="saveTitleTodo(todo.id, $event)"/>
     </li>
     }@else {
     <li class="todo">
-      <input type="checkbox" [checked]="todo.completed" (click)="toggleTodo(todo.id)"/>
+      <input
+        type="checkbox"
+        [checked]="todo.completed"
+        (click)="toggleTodo(todo.id)"
+      />
       <label>{{ todo.title }}</label>
-      @if (!todo.completed) {<button>Edit</button>}
+      @if (!todo.completed) {<button (click)="updateTodoEditingMode(todo.id)">
+        Edit</button
+      >}
       <button class="text-red-500" (click)="removeTodo(todo.id)">Delete</button>
     </li>
     } }
