@@ -1,4 +1,4 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal, computed, OnInit, effect } from '@angular/core';
 import { FilterType, TodoModel } from '../../models/todo';
 import { FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './todo.component.html',
   styleUrl: './todo.component.css',
 })
-export class TodoComponent {
+export class TodoComponent implements OnInit {
   todolist = signal<TodoModel[]>([
     { id: 1, title: 'Buy milk', completed: false, editing: false },
     { id: 2, title: 'Feed the cat', completed: true, editing: false },
@@ -19,7 +19,6 @@ export class TodoComponent {
   filter = signal<FilterType>('all');
 
   todoListFiltered = computed(() => {
-    
     const filter = this.filter();
     const todos = this.todolist();
 
@@ -32,6 +31,18 @@ export class TodoComponent {
         return todos;
     }
   });
+
+  constructor() {
+    effect(() => {
+      localStorage.setItem('todos', JSON.stringify(this.todolist()));
+    });
+  }
+  ngOnInit(): void {
+    const storage = localStorage.getItem('todos');
+    if (storage) {
+      this.todolist.set(JSON.parse(storage));
+    }
+  }
 
   newTodo = new FormControl('', {
     nonNullable: true,
